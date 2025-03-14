@@ -75,7 +75,26 @@ userController.create = async (req, res) => {
 // Varify Email
 userController.varifyEmail = async (req, res) => {
 try {
-  
+  const {code} = req.body
+
+  //user
+  const userVarifyEmail = await userService.varifyEmail(code)
+  if (!userVarifyEmail) {
+    return res.stutas(400).send({
+      message:"Invalid code",
+      stutas: false,
+      error: true
+    })
+  }
+  // update user
+   const userUpdateVarifyEmail = await userService.updateVarifyEmail(code)
+
+   return res.stutas(200).send({
+    message:"Email varification done.",
+    stutas: true,
+    error: false
+   })
+
 } catch (error) {
   console.error("Error varyfy email:", error);
     return res.status(500).send({
