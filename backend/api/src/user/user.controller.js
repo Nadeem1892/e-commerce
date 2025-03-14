@@ -1,11 +1,21 @@
 const userService = require("./user.service");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const sendEmail = require("../../../config/sendEmail")
+const varifyEmailTamplate = require("../../utils/varifyEmailTamplate");
 const userController = {};
 
+// Register User
 userController.create = async (req, res) => {
   try {
     const { name, email, password } = req.body;
+    if (!name || !email || !password) {
+      return res.status(400).send({
+        message : "Provide Name Email Password",
+        error: true,
+        stutas: false
+      })
+    }
 
     //check user exist
     const existinUser = await userService.existUser(email);
@@ -27,13 +37,29 @@ userController.create = async (req, res) => {
       password: hash,
     });
 
+    // Varify Email
+    const varifyEmailUrl = `${process.env.FRONTEND_URL}/varify-email?code=${registerUser?._id}`;
+
+    const varifyEmail = await sendEmail({
+      sendTo: email,
+      subject: "Varify Email from Deems-Shop",
+      html: varifyEmailTamplate({
+        name,
+        url: varifyEmailUrl,
+      }),
+    });
+
     // token genarate
-    const token = jwt.sign({ _id: registerUser?._id }, process.env.TOKEN_SECRET);
+    const token = jwt.sign(
+      { _id: registerUser?._id },
+      process.env.TOKEN_SECRET
+    );
 
     return res.status(200).send({
       status: true,
+      error: false,
       message: "User registered successfully!",
-      userId: registerUser._id,
+      data: registerUser,
       token,
     });
   } catch (error) {
@@ -45,3 +71,19 @@ userController.create = async (req, res) => {
     });
   }
 };
+
+// Varify Email
+userController.varifyEmail = async (req, res) => {
+try {
+  
+} catch (error) {
+  console.error("Error varyfy email:", error);
+    return res.status(500).send({
+      status: false,
+      message: "An error occurred while varyfy the email.",
+      error: error.message,
+    });
+}
+}
+
+module.exports = userController
