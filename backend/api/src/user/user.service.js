@@ -19,8 +19,13 @@ userService.varifyEmail = async (code) => {
 }
 
 // Update Veryfy Email Service
-userService.updateVarifyEmail = async (code) => {
-    return await User.updateOne({_id: code},{verify_email: true})
+userService.updateOneService = async (data, value) => {
+    return await User.updateOne(data,value)
+}
+
+// findByIdAndUpdate service
+userService.findByIdAndUpdateService = async (data, value) => {
+    return await User.findByIdAndUpdate(data, value)
 }
 
 module.exports = userService

@@ -34,7 +34,7 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: "",
     },
-    stutas: {
+    status: {
       type: String,
       enum: ["Active", "Inactive", "Suspended"],
       default: "Active",

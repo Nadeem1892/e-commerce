@@ -3,6 +3,8 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const sendEmail = require("../../../config/sendEmail");
 const varifyEmailTamplate = require("../../utils/varifyEmailTamplate");
+const generateAccesstokern = require("../../utils/generatedAccessToken");
+const generatedRefreshToken = require("../../utils/generatedRefreshToken");
 const userController = {};
 
 // Register User
@@ -87,7 +89,7 @@ userController.varifyEmail = async (req, res) => {
       });
     }
     // update user
-    const userUpdateVarifyEmail = await userService.updateVarifyEmail(code);
+    const userUpdateVarifyEmail = await userService.updateOneService(code);
 
     return res.stutas(200).send({
       message: "Email varification done.",
@@ -125,9 +127,9 @@ userController.login = async (req, res) => {
         status: false,
       });
     }
-
+    
     // Check Account Status
-    if (user.status !== "Active") {
+    if (checkUserExist.status !== "Active") {
       return res.status(400).send({
         message: "Your account is not active. Please contact support.",
         status: false,
@@ -135,7 +137,7 @@ userController.login = async (req, res) => {
     }
 
     // Check password
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await bcrypt.compare(password, checkUserExist.password);
     if (!isMatch) {
       return res.status(400).send({
         message: "Incorrect password",
@@ -143,7 +145,27 @@ userController.login = async (req, res) => {
       });
     }
 
-    //token .....
+    //Access token .....
+    const accessToken = await generateAccesstokern(checkUserExist._id);
+    //Access token .....
+    const refreshToken = await generatedRefreshToken(checkUserExist._id);
+
+    const cookiesOption = {
+      httpOnly: true,
+      secure: true,
+      sameSite: "None",
+    };
+    res.cookie('accessToken', accessToken, cookiesOption)
+    res.cookie('refreshToken', refreshToken, cookiesOption)
+    
+    return res.status(200).send({
+      message: "Login successfuly",
+      status: true,
+      data: {
+        accessToken,
+        refreshToken
+      }
+    })
 
   } catch (error) {
     console.error("Error Login:", error);
@@ -154,5 +176,47 @@ userController.login = async (req, res) => {
     });
   }
 };
+
+// LogOut User
+userController.logout = async (req, res) => {
+  try {
+    const userId = req.userId //middleware
+
+    const cookiesOption = {
+      httpOnly: true,
+      secure: true,
+      sameSite: "None",
+    }
+    res.clearCookie("accessToken", cookiesOption)
+    res.clearCookie("refreshToken", cookiesOption)
+
+    await userService.findByIdAndUpdateService(userId,{refresh_token: ""})
+
+    return res.send({
+      message: "Logout successfuly",
+      status: true
+    })
+
+  } catch (error) {
+    console.error("Error logout:", error);
+    return res.status(500).send({
+      status: false,
+      message: "An error occurred while logout.",
+      error: error.message,
+    });
+  }
+}
+
+//Upload User Avatar
+userController.uploadAvatar = async (req, res) => {
+  try {
+    
+  } catch (error) {
+    return res.status(500).send({
+      message: error.message || error,
+      status: false
+    })
+  }
+}
 
 module.exports = userController;
