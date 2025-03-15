@@ -5,6 +5,7 @@ const sendEmail = require("../../../config/sendEmail");
 const varifyEmailTamplate = require("../../utils/varifyEmailTamplate");
 const generateAccesstokern = require("../../utils/generatedAccessToken");
 const generatedRefreshToken = require("../../utils/generatedRefreshToken");
+const uploadImageCloudinary = require("../../utils/uploadImageCloudinary")
 const userController = {};
 
 // Register User
@@ -210,7 +211,24 @@ userController.logout = async (req, res) => {
 //Upload User Avatar
 userController.uploadAvatar = async (req, res) => {
   try {
-    
+  
+    const image = req.file  // multer middlewere
+    const userId = req?.userId  // auth middlewere
+
+    const upload = await uploadImageCloudinary(image)
+
+    // update image  Avatar
+    const updateUserAvatar = await userService.findByIdAndUpdateService(userId,{avatar: upload.url})
+
+    return res.status(200).send({
+      message: "Upload profile",
+      status: true,
+      data: {
+        id: userId,
+        avatar: upload.url
+      }
+    })
+
   } catch (error) {
     return res.status(500).send({
       message: error.message || error,
