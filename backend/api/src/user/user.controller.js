@@ -5,7 +5,7 @@ const sendEmail = require("../../../config/sendEmail");
 const varifyEmailTamplate = require("../../utils/varifyEmailTamplate");
 const generateAccesstokern = require("../../utils/generatedAccessToken");
 const generatedRefreshToken = require("../../utils/generatedRefreshToken");
-const uploadImageCloudinary = require("../../utils/uploadImageCloudinary")
+const uploadImageCloudinary = require("../../utils/uploadImageCloudinary");
 const userController = {};
 
 // Register User
@@ -128,7 +128,7 @@ userController.login = async (req, res) => {
         status: false,
       });
     }
-    
+
     // Check Account Status
     if (checkUserExist.status !== "Active") {
       return res.status(400).send({
@@ -156,18 +156,17 @@ userController.login = async (req, res) => {
       secure: true,
       sameSite: "None",
     };
-    res.cookie('accessToken', accessToken, cookiesOption)
-    res.cookie('refreshToken', refreshToken, cookiesOption)
-    
+    res.cookie("accessToken", accessToken, cookiesOption);
+    res.cookie("refreshToken", refreshToken, cookiesOption);
+
     return res.status(200).send({
       message: "Login successfuly",
       status: true,
       data: {
         accessToken,
-        refreshToken
-      }
-    })
-
+        refreshToken,
+      },
+    });
   } catch (error) {
     console.error("Error Login:", error);
     return res.status(500).send({
@@ -181,23 +180,22 @@ userController.login = async (req, res) => {
 // LogOut User
 userController.logout = async (req, res) => {
   try {
-    const userId = req.userId //middleware
+    const userId = req.userId; //middleware
 
     const cookiesOption = {
       httpOnly: true,
       secure: true,
       sameSite: "None",
-    }
-    res.clearCookie("accessToken", cookiesOption)
-    res.clearCookie("refreshToken", cookiesOption)
+    };
+    res.clearCookie("accessToken", cookiesOption);
+    res.clearCookie("refreshToken", cookiesOption);
 
-    await userService.findByIdAndUpdateService(userId,{refresh_token: ""})
+    await userService.findByIdAndUpdateService(userId, { refresh_token: "" });
 
     return res.send({
       message: "Logout successfuly",
-      status: true
-    })
-
+      status: true,
+    });
   } catch (error) {
     console.error("Error logout:", error);
     return res.status(500).send({
@@ -206,35 +204,72 @@ userController.logout = async (req, res) => {
       error: error.message,
     });
   }
-}
+};
 
 //Upload User Avatar
 userController.uploadAvatar = async (req, res) => {
   try {
-  
-    const image = req.file  // multer middlewere
-    const userId = req?.userId  // auth middlewere
+    const image = req.file; // multer middlewere
+    const userId = req?.userId; // auth middlewere
 
-    const upload = await uploadImageCloudinary(image)
+    const upload = await uploadImageCloudinary(image);
 
     // update image  Avatar
-    const updateUserAvatar = await userService.findByIdAndUpdateService(userId,{avatar: upload.url})
+    const updateUserAvatar = await userService.findByIdAndUpdateService(
+      userId,
+      { avatar: upload.url }
+    );
 
     return res.status(200).send({
       message: "Upload profile",
       status: true,
       data: {
         id: userId,
-        avatar: upload.url
-      }
+        avatar: upload.url,
+      },
+    });
+  } catch (error) {
+    return res.status(500).send({
+      message: error.message || error,
+      status: false,
+    });
+  }
+};
+
+// update user details
+userController.updateUserDetails = async (req, res) => {
+  try {
+    const userId = req.userId; // auth middlewere
+    const { name, email, mobile, password } = req.body;
+
+
+    // bcrypt password
+    let hashPassword = ""
+    if (password) {
+      const hash = await bcrypt.hashSync(password, 10);
+      hashPassword = hash
+    }
+
+    // update details
+    const updateUser = await userService.findByIdAndUpdateService(userId, {
+      ...(name && { name: name }),
+      ...(email && { email: email }),
+      ...(mobile && { mobile: mobile }),
+      ...(password && { password: hashPassword }),
+    });
+
+    return res.status(200).send({
+      message: "User update successfully",
+      status: true,
+      data: updateUser
     })
 
   } catch (error) {
     return res.status(500).send({
       message: error.message || error,
-      status: false
-    })
+      status: false,
+    });
   }
-}
+};
 
 module.exports = userController;

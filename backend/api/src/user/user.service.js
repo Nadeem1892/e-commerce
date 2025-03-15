@@ -25,7 +25,7 @@ userService.updateOneService = async (data, value) => {
 
 // findByIdAndUpdate service
 userService.findByIdAndUpdateService = async (data, value) => {
-    return await User.findByIdAndUpdate(data, value)
+    return await User.findByIdAndUpdate(data, value, {new: true})
 }
 
 module.exports = userService
