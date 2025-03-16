@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const sendEmail = require("../../../config/sendEmail");
 const varifyEmailTamplate = require("../../utils/varifyEmailTamplate");
-const generateAccesstokern = require("../../utils/generatedAccessToken");
+const generateAccesstoken = require("../../utils/generatedAccessToken");
 const generatedRefreshToken = require("../../utils/generatedRefreshToken");
 const uploadImageCloudinary = require("../../utils/uploadImageCloudinary");
 const generatedOtp = require("../../utils/generatedOtp");
@@ -149,7 +149,7 @@ userController.login = async (req, res) => {
     }
 
     //Access token .....
-    const accessToken = await generateAccesstokern(checkUserExist._id);
+    const accessToken = await generateAccesstoken(checkUserExist._id);
     //Access token .....
     const refreshToken = await generatedRefreshToken(checkUserExist._id);
 
@@ -450,9 +450,65 @@ userController.resetPassword = async (req, res) => {
       message: "Your password has been reset successfully.",
       status: true,
     });
+  } catch (error) {
+    return res.status(500).send({
+      message: error.message || error,
+      status: false,
+    });
+  }
+};
 
+//Refresh Token
+userController.refreshToken = async (req, res) => {
+  try {
+    // Extract the refresh token from cookies or authorization header
+    const refreshToken =
+      req.cookies.refreshToken ||
+      (req?.header?.authorization && req.header.authorization.split(" ")[1]);
+
+    // Check if the refresh token is not provided
+    if (!refreshToken) {
+      return res.status(400).send({
+        message: "Refresh token is missing. Please login again.",
+        status: false,
+      });
+    }
+
+    //Verify Refresh token
+    const verifyRefreshToken = await jwt.verify(
+      refreshToken,
+      process.env.TOKEN_SECRET
+    );
+    if (!verifyRefreshToken) {
+      return res.status(401).send({
+        message: "Token is expire",
+        status: false,
+      });
+    }
+
+    // new Access token
+    const userId = verifyRefreshToken?._id;
+
+    const newAccessToken = await generateAccesstoken(userId);
+
+    const cookiesOption = {
+      httpOnly: true,
+      secure: true,
+      sameSite: "None",
+    };
+
+    res.cookie("accessToken", newAccessToken, cookiesOption);
+
+    return res.send({
+      message: "New Access token generated",
+      status: true,
+      data:{
+        accessToken: newAccessToken
+      }
+    });
 
   } catch (error) {
+    console.log(error)
     return res.status(500).send({
       message: error.message || error,
       status: false,

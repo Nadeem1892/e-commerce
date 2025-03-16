@@ -13,6 +13,7 @@ userRoutes.post("/update-user", auth, userController.updateUserDetails)
 userRoutes.put("/forgot-password", userController.forgotPassword)
 userRoutes.put("/verify-forgot-password-otp", userController.verifyForgotPasswordOtp)
 userRoutes.put("/reset-password", userController.resetPassword)
+userRoutes.post("/refresh-token", userController.refreshToken)
 
 
 module.exports = userRoutes
