@@ -244,12 +244,11 @@ userController.updateUserDetails = async (req, res) => {
     const userId = req.userId; // auth middlewere
     const { name, email, mobile, password } = req.body;
 
-
     // bcrypt password
-    let hashPassword = ""
+    let hashPassword = "";
     if (password) {
       const hash = await bcrypt.hashSync(password, 10);
-      hashPassword = hash
+      hashPassword = hash;
     }
 
     // update details
@@ -263,9 +262,8 @@ userController.updateUserDetails = async (req, res) => {
     return res.status(200).send({
       message: "User update successfully",
       status: true,
-      data: updateUser
-    })
-
+      data: updateUser,
+    });
   } catch (error) {
     return res.status(500).send({
       message: error.message || error,
@@ -277,53 +275,189 @@ userController.updateUserDetails = async (req, res) => {
 // Forgot Password not login
 userController.forgotPassword = async (req, res) => {
   try {
-    const {email} = req.body
+    const { email } = req.body;
 
-    // check user
-    const existUser = await userService.existUser(email)
-    if (!existUser) {
+    // Validate email
+    if (!email || !/\S+@\S+\.\S+/.test(email)) {
       return res.status(400).send({
-        message: "Email not found",
-        status: false
-      })
+        message: "Invalid email address.",
+        status: false,
+      });
     }
 
- // Import the generatedOtp method from utils
-const otp = await generatedOtp();
+    // check user
+    const existUser = await userService.existUser(email);
+    if (!existUser) {
+      return res.status(400).send({
+        message: "User not found with the provided email address.",
+        status: false,
+      });
+    }
 
-// Set expiration time to 1 hour from the current time
-const expireTime = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+    // Import the generatedOtp method from utils
+    const otp = await generatedOtp();
 
-// Update the user document with the OTP and expiration time
-const update = await userService.findByIdAndUpdateService(existUser?._id, {
-  forgot_password_otp: otp,
-  forgot_password_expiry: expireTime.toISOString() // Fix: properly call toISOString()
-});
-console.log(existUser?.name)
-await sendEmail({
-  sendTo: email,
-  subject: "Forgot password from Deems-Shop",
-  html: forgotPasswordTamplate({
-    name: existUser?.name,
-    otp: otp
-  })
-})
+    // Set expiration time to 1 hour from the current time
+    const expireTime = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
-// Return a response to the client
-return res.send({
-  message: "OTP has been sent successfully.",
-  status: true,
-  otpExpirationTime: expireTime.toISOString(), // Optional: Include expiration time in the response
-});
+    // Update the user document with the OTP and expiration time
+    const update = await userService.findByIdAndUpdateService(existUser?._id, {
+      forgot_password_otp: otp,
+      forgot_password_expiry: expireTime.toISOString(), // Fix: properly call toISOString()
+    });
+    console.log(existUser?.name);
+    await sendEmail({
+      sendTo: email,
+      subject: "Forgot password from Deems-Shop",
+      html: forgotPasswordTamplate({
+        name: existUser?.name,
+        otp: otp,
+      }),
+    });
+
+    // Return a response to the client
+    return res.send({
+      message: "OTP has been sent successfully.",
+      status: true,
+      otpExpirationTime: expireTime.toISOString(), // Optional: Include expiration time in the response
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({
+      message: error.message || error,
+      status: false,
+    });
+  }
+};
+
+// Verify Forgot Password OTP
+userController.verifyForgotPasswordOtp = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    // Validate email
+    if (!email || !/\S+@\S+\.\S+/.test(email)) {
+      return res.status(400).send({
+        message: "Invalid email address.",
+        status: false,
+      });
+    }
+
+    // Validate OTP
+    if (!otp || otp.length !== 6 || isNaN(otp)) {
+      return res.status(400).send({
+        message: "Invalid OTP. Please enter a 6-digit OTP.",
+        status: false,
+      });
+    }
+
+    const existUser = await userService.existUser(email);
+    if (!existUser) {
+      return res.status(400).send({
+        message: "User not found with the provided email address.",
+        status: false,
+      });
+    }
+
+    // Get the current date
+    const currentDate = new Date().toISOString();
+
+    // Check if the OTP expiry has passed
+    if (existUser.forgot_password_expiry < currentDate) {
+      return res.status(400).send({
+        message: "The OTP has expired. Please request a new OTP.",
+        status: false,
+      });
+    }
+
+    // Check if the provided OTP does not match the stored OTP
+    if (otp !== existUser.forgot_password_otp) {
+      // If OTP doesn't match, send an error response with a message
+      return res.status(400).send({
+        message: "Invalid OTP. Please try again.",
+        status: false,
+      });
+    }
+
+    // OTP verification successful
+    return res.send({
+      message:
+        "OTP verified successfully. You can now proceed with resetting your password.",
+      status: true,
+    });
+  } catch (error) {
+    return res.status(500).send({
+      message: error.message || error,
+      status: false,
+    });
+  }
+};
+
+//Reset Password
+userController.resetPassword = async (req, res) => {
+  try {
+    const { email, newPassword, confirmPassword } = req.body;
+
+    // Validate email
+    if (!email || !/\S+@\S+\.\S+/.test(email)) {
+      return res.status(400).send({
+        message: "Invalid email address.",
+        status: false,
+      });
+    }
+
+    // Validate newPassword and confirmPassword
+    if (!newPassword || !confirmPassword) {
+      return res.status(400).send({
+        message: "Both new password and confirm password are required.",
+        status: false,
+      });
+    }
+
+    // Check if newPassword and confirmPassword match
+    if (newPassword !== confirmPassword) {
+      return res.status(400).send({
+        message: "Passwords do not match. Please try again.",
+        status: false,
+      });
+    }
+
+    // // Optionally, validate password strength (example: minimum length of 8)
+    // if (newPassword.length < 8) {
+    //   return res.status(400).send({
+    //     message: "Password must be at least 8 characters long.",
+    //     status: false,
+    //   });
+    // }
+
+    const existUser = await userService.existUser(email);
+    if (!existUser) {
+      return res.status(400).send({
+        message: "User not found with the provided email address.",
+        status: false,
+      });
+    }
+
+    // bcrypt password
+    const hash = await bcrypt.hashSync(newPassword, 10);
+
+    //  update Password
+    await userService.findByIdAndUpdateService(existUser?._id, {
+      password: hash,
+    });
+
+    return res.send({
+      message: "Your password has been reset successfully.",
+      status: true,
+    });
 
 
   } catch (error) {
-    console.log(error)
     return res.status(500).send({
       message: error.message || error,
-      status: false
-    })
+      status: false,
+    });
   }
-}
+};
 
 module.exports = userController;
