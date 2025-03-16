@@ -6,6 +6,8 @@ const varifyEmailTamplate = require("../../utils/varifyEmailTamplate");
 const generateAccesstokern = require("../../utils/generatedAccessToken");
 const generatedRefreshToken = require("../../utils/generatedRefreshToken");
 const uploadImageCloudinary = require("../../utils/uploadImageCloudinary");
+const generatedOtp = require("../../utils/generatedOtp");
+const forgotPasswordTamplate = require("../../utils/forgotPasswordTamplate");
 const userController = {};
 
 // Register User
@@ -271,5 +273,57 @@ userController.updateUserDetails = async (req, res) => {
     });
   }
 };
+
+// Forgot Password not login
+userController.forgotPassword = async (req, res) => {
+  try {
+    const {email} = req.body
+
+    // check user
+    const existUser = await userService.existUser(email)
+    if (!existUser) {
+      return res.status(400).send({
+        message: "Email not found",
+        status: false
+      })
+    }
+
+ // Import the generatedOtp method from utils
+const otp = await generatedOtp();
+
+// Set expiration time to 1 hour from the current time
+const expireTime = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+// Update the user document with the OTP and expiration time
+const update = await userService.findByIdAndUpdateService(existUser?._id, {
+  forgot_password_otp: otp,
+  forgot_password_expiry: expireTime.toISOString() // Fix: properly call toISOString()
+});
+console.log(existUser?.name)
+await sendEmail({
+  sendTo: email,
+  subject: "Forgot password from Deems-Shop",
+  html: forgotPasswordTamplate({
+    name: existUser?.name,
+    otp: otp
+  })
+})
+
+// Return a response to the client
+return res.send({
+  message: "OTP has been sent successfully.",
+  status: true,
+  otpExpirationTime: expireTime.toISOString(), // Optional: Include expiration time in the response
+});
+
+
+  } catch (error) {
+    console.log(error)
+    return res.status(500).send({
+      message: error.message || error,
+      status: false
+    })
+  }
+}
 
 module.exports = userController;

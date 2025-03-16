@@ -10,6 +10,7 @@ userRoutes.post("/login",userController.login)
 userRoutes.get("/logout",auth, userController.logout)
 userRoutes.put("/upload-avatar", auth, upload.single('avatar'), userController.uploadAvatar)
 userRoutes.post("/update-user", auth, userController.updateUserDetails)
+userRoutes.put("/forgot-password", userController.forgotPassword)
 
 
 module.exports = userRoutes
