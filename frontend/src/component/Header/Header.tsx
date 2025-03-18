@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "../../assets/logo.png";
 import Search from "../Search/Search";
 import { FaRegUserCircle } from "react-icons/fa";
@@ -10,9 +10,13 @@ const Header = () => {
   const [isMobile] = useMobile();
   const location = useLocation();
   const isSearchPage = location.pathname === "/search";
+  const navigate = useNavigate();
+  const redirectLoginPage = () => {
+    navigate("/login");
+  };
 
   return (
-    <header className=" h-24 lg:h-20 lg:shadow-md sticky top-0 flex flex-col justify-center gap-1">
+    <header className=" bg-white h-24 lg:h-20 lg:shadow-md sticky top-0 flex flex-col justify-center gap-1">
       {!(isSearchPage && isMobile) && (
         <div className=" container mx-auto flex items-center  lg:px-10 px-3 justify-between">
           {/* Logo */}
@@ -49,25 +53,24 @@ const Header = () => {
             {/* desktop */}
             <div className="hidden lg:block ">
               <div className="flex items-center">
-              <Link to={"/"}>
-                {/* add to cart icon */}
-                <div className="font-sans block mt-4 lg:inline-block lg:mt-0 lg:ml-6 align-middle text-neutral-500 hover:text-[#ffbf00]">
-                  <div className="flex items-center gap-1">
-                  <IoMdCart size={25}/>
-                  <span className="text-[17px]">Cart</span>
+                <Link to={"/"}>
+                  {/* add to cart icon */}
+                  <div className="font-sans block mt-4 lg:inline-block lg:mt-0 lg:ml-6 align-middle text-neutral-500 hover:text-[#ffbf00]">
+                    <div className="flex items-center gap-1">
+                      <IoMdCart size={25} />
+                      <span className="text-[17px]">Cart</span>
+                    </div>
                   </div>
-                </div>
-              </Link>
-              <Link to={"/login"}>
-                {/* add to cart icon */}
-                <div className="font-sans block mt-4 lg:inline-block lg:mt-0 lg:ml-6 align-middle text-neutral-500 hover:text-[#ffbf00]">
-                  <div className="flex items-center gap-1">
-                  <FaUser size={20}/>
-                  <span className="text-[17px]">Sign In</span>
+                </Link>
+                <button onClick={redirectLoginPage}>
+                  {/* add to cart icon */}
+                  <div className="font-sans block mt-4 lg:inline-block lg:mt-0 lg:ml-6 align-middle text-neutral-500 hover:text-[#ffbf00]">
+                    <div className="flex items-center gap-1">
+                      <FaUser size={20} />
+                      <span className="text-[17px]">Sign In</span>
+                    </div>
                   </div>
-                </div>
-              </Link>
-              
+                </button>
               </div>
             </div>
           </div>
