@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useResetPasswordMutation } from "../../service/api/user/userService";
+
 import { toast } from "react-toastify";
+import { useResetPasswordMutation } from "../../services/api/user/userServices";
 
 // Reset Password Component
 const ResetPassword = () => {

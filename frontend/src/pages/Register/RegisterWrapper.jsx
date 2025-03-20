@@ -1,9 +1,9 @@
 import { Form, Formik } from "formik";
 import Register from "./Register";
 import * as Yup from "yup";
-import { useRegisterMutation } from "../../service/api/user/userService";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useRegisterMutation } from "../../services/api/user/userServices";
 
 const RegisterWrapper = () => {
   const navigate = useNavigate();

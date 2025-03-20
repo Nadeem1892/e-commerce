@@ -3,9 +3,8 @@ import { FaInstagram } from "react-icons/fa";
 import { FaLinkedin } from "react-icons/fa";
 
 
-type Props = {};
 
-const Footer = (props: Props) => {
+const Footer = () => {
   return (
     <footer className="border-t">
       <div className=" container mx-auto p-4 text-center flex flex-col lg:flex-row lg:justify-between gap-2">

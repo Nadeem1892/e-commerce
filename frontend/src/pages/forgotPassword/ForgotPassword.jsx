@@ -1,8 +1,8 @@
 import { Formik, Field, Form, ErrorMessage } from "formik";
 import { useNavigate } from "react-router-dom";
 import * as Yup from "yup";
-import { useFogotPasswordMutation } from "../../service/api/user/userService";
 import { toast } from "react-toastify";
+import { useFogotPasswordMutation } from "../../services/api/user/userServices";
 
 // Forgot Password Component
 const ForgotPassword = () => {

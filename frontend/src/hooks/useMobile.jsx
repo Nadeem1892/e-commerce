@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 
 // Define the return type of the hook: [boolean]
-const useMobile = (breakpoint: number = 768): [boolean] => {
-    const [isMobile, setIsMobile] = useState<boolean>(window.innerWidth < breakpoint);
+const useMobile = (breakpoint = 768) => {
+    const [isMobile, setIsMobile] = useState(window.innerWidth < breakpoint);
 
     const handleResize = () => {
         const checkpoint = window.innerWidth < breakpoint;

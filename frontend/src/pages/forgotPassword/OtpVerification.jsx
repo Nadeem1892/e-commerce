@@ -2,8 +2,8 @@ import { useEffect } from "react";
 import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
-import { useVerifyForgotPasswordOtpMutation } from "../../service/api/user/userService";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useVerifyForgotPasswordOtpMutation } from "../../services/api/user/userServices";
 
 // OTP Verification Component
 const OtpVerification = () => {

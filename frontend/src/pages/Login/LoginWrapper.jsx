@@ -1,11 +1,17 @@
 import Login from "./Login";
 import { Form, Formik } from "formik";
 import * as Yup from "yup";
-import { useLoginMutation } from "../../service/api/user/userService";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+
+import { useLoginMutation } from "../../services/api/user/userServices";
 
 const LoginWrapper = () => {
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
   const [login] = useLoginMutation()
+
  
     // initial value
   const initialValues = {
@@ -33,9 +39,18 @@ const handleSubmit = async (values,{setSubmitting,setErrors}) => {
       // Store the access and refresh tokens in localStorage
       localStorage.setItem("accessToken", data?.data.accessToken); // Store the access token
       localStorage.setItem("refreshToken", data?.data.refreshToken); // Store the refresh token
+ // Redirect to the home page or dashboard
+ navigate("/");
+    
+      // Now, use the `useUserDetailsQuery` hook to fetch user details.
+      // This hook will return data once the request is completed
+      const { data: userDetailsData } = await useUserDetailsQuery(); // RTK Query hook
+      console.log(userDetailsData)
 
-      // Optionally, you can redirect the user after successful login
-      // For example: history.push("/dashboard");
+      // Dispatch the user details to Redux
+      dispatch(setUserDetails(userDetailsData));
+
+     
     } else {
       // If login is unsuccessful, show the message from the server
       toast.error(data.message); // Display error message (from server)
