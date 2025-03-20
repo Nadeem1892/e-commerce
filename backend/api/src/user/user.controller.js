@@ -408,7 +408,7 @@ userController.verifyForgotPasswordOtp = async (req, res) => {
 //Reset Password
 userController.resetPassword = async (req, res) => {
   try {
-    const { email, newPassword, confirmPassword } = req.body;
+    const { email, password, confirmPassword } = req.body;
 
     // Validate email
     if (!email || !/\S+@\S+\.\S+/.test(email)) {
@@ -419,7 +419,7 @@ userController.resetPassword = async (req, res) => {
     }
 
     // Validate newPassword and confirmPassword
-    if (!newPassword || !confirmPassword) {
+    if (!password || !confirmPassword) {
       return res.send({
         message: "Both new password and confirm password are required.",
         status: false,
@@ -427,7 +427,7 @@ userController.resetPassword = async (req, res) => {
     }
 
     // Check if newPassword and confirmPassword match
-    if (newPassword !== confirmPassword) {
+    if (password !== confirmPassword) {
       return res.send({
         message: "Passwords do not match. Please try again.",
         status: false,
@@ -451,7 +451,7 @@ userController.resetPassword = async (req, res) => {
     }
 
     // bcrypt password
-    const hash = await bcrypt.hashSync(newPassword, 10);
+    const hash = await bcrypt.hashSync(password, 10);
 
     //  update Password
     await userService.findByIdAndUpdateService(existUser?._id, {

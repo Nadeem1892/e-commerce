@@ -48,6 +48,14 @@ export const userApi = createApi({
         body: body,
       }),
     }),
+    // Reset  Password OTP Endpoint
+    resetPassword: builder.mutation({
+      query: (body) => ({
+        url: "reset-password", // Make sure this matches your backend route
+        method: "PUT",
+        body: body,
+      }),
+    }),
   }),
 });
 
@@ -56,4 +64,5 @@ export const {
   useRegisterMutation,
   useFogotPasswordMutation,
   useVerifyForgotPasswordOtpMutation,
+  useResetPasswordMutation,
 } = userApi;

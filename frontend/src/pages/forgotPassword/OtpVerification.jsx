@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
@@ -7,7 +7,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 // OTP Verification Component
 const OtpVerification = () => {
-  const [isOtpValid, setIsOtpValid] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
   const [verifyForgotPasswordOtp, { isLoading, error }] =
@@ -54,6 +53,7 @@ const OtpVerification = () => {
         email: email, // Pass the email along with the OTP
       }).unwrap();
 
+
       setSubmitting(false);
 
       // Destructure the response
@@ -62,7 +62,9 @@ const OtpVerification = () => {
       if (status === true) {
         // Show success message
         toast.success(message);
-        navigate("/reset-password", { replace: true });
+        navigate("/reset-password",  { 
+          state: { email }
+        });
       } else {
         toast.error(message);
       }
@@ -155,18 +157,7 @@ const OtpVerification = () => {
           )}
         </Formik>
 
-        {/* Show OTP validation result */}
-        {isOtpValid !== null && (
-          <div
-            className={`mt-4 text-center text-sm ${
-              isOtpValid ? "text-green-500" : "text-red-600"
-            }`}
-          >
-            {isOtpValid
-              ? "OTP Verified successfully!"
-              : "Invalid OTP. Please try again."}
-          </div>
-        )}
+       
 
         {/* Show error message if any */}
         {error && (

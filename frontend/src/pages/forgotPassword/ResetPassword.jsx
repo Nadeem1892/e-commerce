@@ -1,10 +1,28 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useResetPasswordMutation } from "../../service/api/user/userService";
+import { toast } from "react-toastify";
 
 // Reset Password Component
 const ResetPassword = () => {
-  const [isPasswordReset, setIsPasswordReset] = useState<boolean | null>(null);
+  
+   const navigate = useNavigate();
+    const location = useLocation();
+    const [resetPassword, { isLoading, error }] =
+      useResetPasswordMutation();
+
+
+       // Ensure email is passed from previous page
+        useEffect(() => {
+          if (!location?.state?.email) {
+            navigate("/forgot-password");
+            alert("Email not found. Redirecting to Forgot Password.");
+          }
+        }, [location, navigate]);
+
+
 
   // Define form validation schema with Yup
   const validationSchema = Yup.object().shape({
@@ -16,6 +34,7 @@ const ResetPassword = () => {
       .required("Please confirm your password"),
   });
 
+
   // Define initial values for the form
   const initialValues = {
     password: "",
@@ -23,11 +42,51 @@ const ResetPassword = () => {
   };
 
   // Handle form submission (password reset)
-  const handleSubmit = (values: { password: string }) => {
-    // In a real app, this would make an API call to reset the password
-    console.log("Password reset successfully:", values.password);
-    setIsPasswordReset(true);
-  };
+  const handleSubmit =  async (values,{ setSubmitting, setErrors }) => {
+    setSubmitting(true); // Set form submission state
+
+    // Get the email from location state
+    const email = location?.state?.email;
+    
+
+    if (!email) {
+      setSubmitting(false);
+      toast.error("Email is missing. Please try again.");
+      return;
+    }
+
+        try {
+          // Send the OTP to the server for verification
+          const response = await resetPassword({
+            email: email, // Pass the email along with the OTP
+            password: values.password,
+            confirmPassword: values.confirmPassword,
+          }).unwrap();
+    
+          console.log(response)
+          setSubmitting(false);
+    
+          // Destructure the response
+          const { message, status } = response;
+    
+          if (status === true) {
+            // Show success message
+            toast.success(message);
+            navigate("/login");
+          } else {
+            toast.error(message);
+          }
+        } catch (err) {
+          setSubmitting(false);
+          console.error("Reset Password failed:", err);
+          setErrors({ otp: "Failed to Reset Password. Please try again." }); // Show error if request fails
+        } finally {
+          setSubmitting(false); // Reset submitting state
+        }
+      };
+  
+
+
 
   return (
     <section className="container mx-auto flex items-center lg:px-10 px-3 justify-between">
@@ -116,18 +175,7 @@ const ResetPassword = () => {
           )}
         </Formik>
 
-        {/* Show Password Reset Success Message */}
-        {isPasswordReset !== null && (
-          <div
-            className={`mt-4 text-center text-sm ${
-              isPasswordReset ? "text-green-500" : "text-red-600"
-            }`}
-          >
-            {isPasswordReset
-              ? "Password reset successfully!"
-              : "Something went wrong. Please try again."}
-          </div>
-        )}
+       
       </div>
     </section>
   );
