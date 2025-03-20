@@ -7,6 +7,11 @@ userService.createUser = async (userDetails) => {
     return await User.create(userDetails)
 }
 
+// find by id service
+userService.findByIdService = async (userId) => {
+    return await User.findById(userId).select('-password -refresh_token')
+}
+
 // Check User Exist Service
 userService.existUser = async (email) => {
 return await User.findOne({email})

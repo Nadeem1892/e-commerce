@@ -15,7 +15,7 @@ userController.create = async (req, res) => {
   try {
     const { name, email, password } = req.body;
     if (!name || !email || !password) {
-      return res.status(400).send({
+      return res.send({
         message: "Provide Name Email Password",
         error: true,
         stutas: false,
@@ -26,7 +26,7 @@ userController.create = async (req, res) => {
     const existinUser = await userService.existUser(email);
 
     if (existinUser) {
-      return res.status(400).send({
+      return res.send({
         status: false,
         message: "Email is already taken. Please choose a different one.",
       });
@@ -116,7 +116,7 @@ userController.login = async (req, res) => {
 
     // validation
     if (!email || !password) {
-      return res.status(400).send({
+      return res.send({
         message: "provide email, password",
         status: false,
       });
@@ -125,7 +125,7 @@ userController.login = async (req, res) => {
     // Check if the user exists
     const checkUserExist = await userService.existUser(email);
     if (!checkUserExist || checkUserExist === null) {
-      return res.status(400).send({
+      return res.send({
         message: "User not found",
         status: false,
       });
@@ -133,7 +133,7 @@ userController.login = async (req, res) => {
 
     // Check Account Status
     if (checkUserExist.status !== "Active") {
-      return res.status(400).send({
+      return res.send({
         message: "Your account is not active. Please contact support.",
         status: false,
       });
@@ -142,7 +142,7 @@ userController.login = async (req, res) => {
     // Check password
     const isMatch = await bcrypt.compare(password, checkUserExist.password);
     if (!isMatch) {
-      return res.status(400).send({
+      return res.send({
         message: "Incorrect password",
         status: false,
       });
@@ -152,6 +152,10 @@ userController.login = async (req, res) => {
     const accessToken = await generateAccesstoken(checkUserExist._id);
     //Access token .....
     const refreshToken = await generatedRefreshToken(checkUserExist._id);
+    //  update User Date In Login
+    await userService.findByIdAndUpdateService(checkUserExist?._id, {
+      last_login_date: new Date(),
+    });
 
     const cookiesOption = {
       httpOnly: true,
@@ -279,7 +283,7 @@ userController.forgotPassword = async (req, res) => {
 
     // Validate email
     if (!email || !/\S+@\S+\.\S+/.test(email)) {
-      return res.status(400).send({
+      return res.send({
         message: "Invalid email address.",
         status: false,
       });
@@ -288,7 +292,7 @@ userController.forgotPassword = async (req, res) => {
     // check user
     const existUser = await userService.existUser(email);
     if (!existUser) {
-      return res.status(400).send({
+      return res.send({
         message: "User not found with the provided email address.",
         status: false,
       });
@@ -305,7 +309,7 @@ userController.forgotPassword = async (req, res) => {
       forgot_password_otp: otp,
       forgot_password_expiry: expireTime.toISOString(), // Fix: properly call toISOString()
     });
-    console.log(existUser?.name);
+    
     await sendEmail({
       sendTo: email,
       subject: "Forgot password from Deems-Shop",
@@ -337,7 +341,7 @@ userController.verifyForgotPasswordOtp = async (req, res) => {
 
     // Validate email
     if (!email || !/\S+@\S+\.\S+/.test(email)) {
-      return res.status(400).send({
+      return res.send({
         message: "Invalid email address.",
         status: false,
       });
@@ -345,15 +349,17 @@ userController.verifyForgotPasswordOtp = async (req, res) => {
 
     // Validate OTP
     if (!otp || otp.length !== 6 || isNaN(otp)) {
-      return res.status(400).send({
+      return res.send({
         message: "Invalid OTP. Please enter a 6-digit OTP.",
         status: false,
       });
     }
 
+
+
     const existUser = await userService.existUser(email);
     if (!existUser) {
-      return res.status(400).send({
+      return res.send({
         message: "User not found with the provided email address.",
         status: false,
       });
@@ -364,7 +370,7 @@ userController.verifyForgotPasswordOtp = async (req, res) => {
 
     // Check if the OTP expiry has passed
     if (existUser.forgot_password_expiry < currentDate) {
-      return res.status(400).send({
+      return res.send({
         message: "The OTP has expired. Please request a new OTP.",
         status: false,
       });
@@ -373,16 +379,22 @@ userController.verifyForgotPasswordOtp = async (req, res) => {
     // Check if the provided OTP does not match the stored OTP
     if (otp !== existUser.forgot_password_otp) {
       // If OTP doesn't match, send an error response with a message
-      return res.status(400).send({
+      return res.send({
         message: "Invalid OTP. Please try again.",
         status: false,
       });
     }
 
+    // empty forgot otp and pass
+    await userService.findByIdAndUpdateService(existUser?._id, {
+      forgot_password_otp:"",
+      forgot_password_expiry: ""
+    }) 
+
     // OTP verification successful
     return res.send({
       message:
-        "OTP verified successfully. You can now proceed with resetting your password.",
+        "OTP verified successfully. ",
       status: true,
     });
   } catch (error) {
@@ -400,7 +412,7 @@ userController.resetPassword = async (req, res) => {
 
     // Validate email
     if (!email || !/\S+@\S+\.\S+/.test(email)) {
-      return res.status(400).send({
+      return res.send({
         message: "Invalid email address.",
         status: false,
       });
@@ -408,7 +420,7 @@ userController.resetPassword = async (req, res) => {
 
     // Validate newPassword and confirmPassword
     if (!newPassword || !confirmPassword) {
-      return res.status(400).send({
+      return res.send({
         message: "Both new password and confirm password are required.",
         status: false,
       });
@@ -416,7 +428,7 @@ userController.resetPassword = async (req, res) => {
 
     // Check if newPassword and confirmPassword match
     if (newPassword !== confirmPassword) {
-      return res.status(400).send({
+      return res.send({
         message: "Passwords do not match. Please try again.",
         status: false,
       });
@@ -424,7 +436,7 @@ userController.resetPassword = async (req, res) => {
 
     // // Optionally, validate password strength (example: minimum length of 8)
     // if (newPassword.length < 8) {
-    //   return res.status(400).send({
+    //   return res.send({
     //     message: "Password must be at least 8 characters long.",
     //     status: false,
     //   });
@@ -432,7 +444,7 @@ userController.resetPassword = async (req, res) => {
 
     const existUser = await userService.existUser(email);
     if (!existUser) {
-      return res.status(400).send({
+      return res.send({
         message: "User not found with the provided email address.",
         status: false,
       });
@@ -468,7 +480,7 @@ userController.refreshToken = async (req, res) => {
 
     // Check if the refresh token is not provided
     if (!refreshToken) {
-      return res.status(400).send({
+      return res.send({
         message: "Refresh token is missing. Please login again.",
         status: false,
       });
@@ -502,13 +514,31 @@ userController.refreshToken = async (req, res) => {
     return res.send({
       message: "New Access token generated",
       status: true,
-      data:{
-        accessToken: newAccessToken
-      }
+      data: {
+        accessToken: newAccessToken,
+      },
     });
-
   } catch (error) {
-    console.log(error)
+    console.log(error);
+    return res.status(500).send({
+      message: error.message || error,
+      status: false,
+    });
+  }
+};
+
+//get login user details
+userController.userDetails = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const userData = await userService.findByIdService(userId);
+    return res.send({
+      message: "User details",
+      status: true,
+      data: userData,
+    });
+  } catch (error) {
+    console.log(error);
     return res.status(500).send({
       message: error.message || error,
       status: false,

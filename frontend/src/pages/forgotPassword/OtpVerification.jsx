@@ -1,11 +1,25 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import { toast } from "react-toastify";
+import { useVerifyForgotPasswordOtpMutation } from "../../service/api/user/userService";
+import { useLocation, useNavigate } from "react-router-dom";
 
 // OTP Verification Component
 const OtpVerification = () => {
-  const [otp, setOtp] = useState<string>("123456"); // Mock OTP value (In a real app, this would come from an API)
-  const [isOtpValid, setIsOtpValid] = useState<boolean | null>(null);
+  const [isOtpValid, setIsOtpValid] = useState(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [verifyForgotPasswordOtp, { isLoading, error }] =
+    useVerifyForgotPasswordOtpMutation(); // Hook for API call
+
+  // Ensure email is passed from previous page
+  useEffect(() => {
+    if (!location?.state?.email) {
+      navigate("/forgot-password");
+      alert("Email not found. Redirecting to Forgot Password.");
+    }
+  }, [location, navigate]);
 
   // Define form validation schema with Yup
   const validationSchema = Yup.object().shape({
@@ -21,13 +35,43 @@ const OtpVerification = () => {
   };
 
   // Handle form submission (OTP verification)
-  const handleSubmit = (values: { otp: string }) => {
-    // Validate the entered OTP
-    if (values.otp === otp) {
-      setIsOtpValid(true);
-      alert("OTP Verified successfully!");
-    } else {
-      setIsOtpValid(false);
+  const handleSubmit = async (values, { setSubmitting, setErrors }) => {
+    setSubmitting(true); // Set form submission state
+
+    // Get the email from location state
+    const email = location?.state?.email;
+
+    if (!email) {
+      setSubmitting(false);
+      toast.error("Email is missing. Please try again.");
+      return;
+    }
+
+    try {
+      // Send the OTP to the server for verification
+      const response = await verifyForgotPasswordOtp({
+        otp: values.otp, // Use values.otp here
+        email: email, // Pass the email along with the OTP
+      }).unwrap();
+
+      setSubmitting(false);
+
+      // Destructure the response
+      const { message, status } = response;
+
+      if (status === true) {
+        // Show success message
+        toast.success(message);
+        navigate("/reset-password", { replace: true });
+      } else {
+        toast.error(message);
+      }
+    } catch (err) {
+      setSubmitting(false);
+      console.error("OTP verification failed:", err);
+      setErrors({ otp: "Failed to verify OTP. Please try again." }); // Show error if request fails
+    } finally {
+      setSubmitting(false); // Reset submitting state
     }
   };
 
@@ -53,11 +97,16 @@ const OtpVerification = () => {
                     name="otp"
                     maxLength={1}
                     className="w-12 h-12 text-center border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#ffbf00] focus:border-[#ffbf00]"
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                      // Manually handle OTP value update
+                    onChange={(e) => {
                       const otpValue = e.target.value;
-                      setFieldValue("otp", values.otp.slice(0, index) + otpValue + values.otp.slice(index + 1));
-                      // Auto focus the next input when a digit is entered
+                      setFieldValue(
+                        "otp",
+                        values.otp.slice(0, index) +
+                          otpValue +
+                          values.otp.slice(index + 1)
+                      );
+
+                      // Auto-focus the next input when a digit is entered
                       if (otpValue && index < 5) {
                         document.getElementById(`otp-${index + 1}`)?.focus();
                       }
@@ -66,6 +115,7 @@ const OtpVerification = () => {
                   />
                 ))}
               </div>
+
               <ErrorMessage
                 name="otp"
                 component="div"
@@ -75,12 +125,14 @@ const OtpVerification = () => {
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || isLoading} // Disable while submitting or loading
                 className={`relative mt-5 flex items-center w-full justify-center px-4 py-2 text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring focus:ring-blue-300 ${
-                  isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+                  isSubmitting || isLoading
+                    ? "opacity-50 cursor-not-allowed"
+                    : ""
                 }`}
               >
-                {isSubmitting ? (
+                {isLoading ? (
                   <span className="absolute left-2 animate-spin">
                     <svg
                       className="w-5 h-5 text-white"
@@ -97,7 +149,7 @@ const OtpVerification = () => {
                     </svg>
                   </span>
                 ) : null}
-                {isSubmitting ? "Verifying..." : "Verify OTP"}
+                {isSubmitting || isLoading ? "Verifying..." : "Verify OTP"}
               </button>
             </Form>
           )}
@@ -106,9 +158,20 @@ const OtpVerification = () => {
         {/* Show OTP validation result */}
         {isOtpValid !== null && (
           <div
-            className={`mt-4 text-center text-sm ${isOtpValid ? "text-green-500" : "text-red-600"}`}
+            className={`mt-4 text-center text-sm ${
+              isOtpValid ? "text-green-500" : "text-red-600"
+            }`}
           >
-            {isOtpValid ? "OTP Verified successfully!" : "Invalid OTP. Please try again."}
+            {isOtpValid
+              ? "OTP Verified successfully!"
+              : "Invalid OTP. Please try again."}
+          </div>
+        )}
+
+        {/* Show error message if any */}
+        {error && (
+          <div className="mt-4 text-center text-sm text-red-600">
+            {error?.data?.message || "Something went wrong, please try again."}
           </div>
         )}
       </div>

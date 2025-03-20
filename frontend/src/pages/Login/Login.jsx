@@ -2,31 +2,12 @@ import { useState } from "react";
 import { BiSolidHide, BiSolidShow } from "react-icons/bi";
 import { Link } from "react-router-dom";
 
-type LoginProps = {
-    formikProps: {
-      handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
-      handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-      values: {
-        email: string;
-        password: string;
-      };
-      errors: {
-        email?: string;
-        password?: string;
-      };
-      touched: {
-        email?: boolean;
-        password?: boolean;
-      };
-      setFieldValue: (field: string, value: any) => void;
-      isSubmitting: boolean;
-    };
-};
 
 
-const Login: React.FC<LoginProps> = ({ formikProps }) => {
+
+const Login = ({ formikProps }) => {
     const { values, setFieldValue, errors, isSubmitting, touched } = formikProps;
-    const [showPassword, setShowPassword] = useState<boolean>(false);
+    const [showPassword, setShowPassword] = useState(false);
     return (
         <section className="container mx-auto flex items-center lg:px-10 px-3 justify-between">
         <div className="bg-white my-4 w-full max-w-lg mx-auto rounded-lg p-4 shadow">

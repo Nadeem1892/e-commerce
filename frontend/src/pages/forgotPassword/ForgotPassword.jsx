@@ -1,8 +1,14 @@
 import { Formik, Field, Form, ErrorMessage } from "formik";
+import { useNavigate } from "react-router-dom";
 import * as Yup from "yup";
+import { useFogotPasswordMutation } from "../../service/api/user/userService";
+import { toast } from "react-toastify";
 
 // Forgot Password Component
 const ForgotPassword = () => {
+  const navigate = useNavigate()
+  const [forgotPassword] = useFogotPasswordMutation()
+  
   // Define form validation schema with Yup
   const validationSchema = Yup.object().shape({
     email: Yup.string()
@@ -16,11 +22,38 @@ const ForgotPassword = () => {
   };
 
   // Handle form submission
-  const handleSubmit = async (values: { email: string }) => {
-    console.log("Submitting Forgot Password form with email:", values.email);
-    // Call your API to send the reset password email here
-    // For now, we simulate the process
-    alert("Password reset email sent to: " + values.email);
+  const handleSubmit = async (values,{setSubmitting,setErrors}) => {
+    
+     try {
+        // Call the login function that makes the API request
+        const userForgotPassword = await forgotPassword(values); // Assuming login is an async function returning the response
+        // Stop submitting (the form is no longer in submission state)
+        setSubmitting(false);
+    
+        
+        // Destructure the response
+        const { data } = userForgotPassword;
+
+        
+        // Check if the status is true (successful login)
+       if (data?.status === true) {
+               // Show success message
+               toast.success(data.message);
+       
+               navigate("/verification-otp", { state: values });
+             } else {
+               toast.error(data?.message);
+             }
+      } catch (error) {
+        setSubmitting(false);
+                if (error.user) {
+                  // Server responded with a status other than 200 range
+                  setErrors({ api: error.message });
+                } else {
+                  // Network error or other issues
+                  setErrors({ api: "An error occurred. Please try again." });
+                }
+      }
   };
 
   return (

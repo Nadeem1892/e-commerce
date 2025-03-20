@@ -14,6 +14,7 @@ userRoutes.put("/forgot-password", userController.forgotPassword)
 userRoutes.put("/verify-forgot-password-otp", userController.verifyForgotPasswordOtp)
 userRoutes.put("/reset-password", userController.resetPassword)
 userRoutes.post("/refresh-token", userController.refreshToken)
+userRoutes.get("/user-details", auth, userController.userDetails)
 
 
 module.exports = userRoutes

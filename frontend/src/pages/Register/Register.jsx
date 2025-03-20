@@ -2,36 +2,11 @@ import { useState } from "react";
 import { BiSolidHide, BiSolidShow } from "react-icons/bi";
 import { Link } from "react-router-dom";
 
-type RegisterProps = {
-  formikProps: {
-    handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
-    handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    values: {
-      name: string;
-      email: string;
-      password: string;
-      confirmPassword: string;
-    };
-    errors: {
-      name?: string;
-      email?: string;
-      password?: string;
-      confirmPassword?: string;
-    };
-    touched: {
-      name?: boolean;
-      email?: boolean;
-      password?: boolean;
-      confirmPassword?: boolean;
-    };
-    setFieldValue: (field: string, value: any) => void;
-    isSubmitting: boolean;
-  };
-};
 
-const Register: React.FC<RegisterProps> = ({ formikProps }) => {
+
+const Register = ({ formikProps }) => {
   const { values, setFieldValue, errors, isSubmitting, touched } = formikProps;
-  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <section className="container mx-auto flex items-center lg:px-10 px-3 justify-between">
