@@ -4,68 +4,59 @@ import * as Yup from "yup";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-
 import { useLoginMutation } from "../../services/api/user/userServices";
 
-const LoginWrapper = () => {
-  const navigate = useNavigate()
-  const dispatch = useDispatch()
-  const [login] = useLoginMutation()
 
- 
-    // initial value
+
+
+const LoginWrapper = () => {
+  const navigate = useNavigate();
+  const [login] = useLoginMutation();
+
+  // initial value
   const initialValues = {
     email: "",
     password: "",
   };
 
-//   submit fuction
-const handleSubmit = async (values,{setSubmitting,setErrors}) => {
-  try {
-    // Call the login function that makes the API request
-    const user = await login(values); // Assuming login is an async function returning the response
-    // Stop submitting (the form is no longer in submission state)
-    setSubmitting(false);
+  //   submit fuction
+  const handleSubmit = async (values, { setSubmitting, setErrors }) => {
+    try {
+      // Call the login function that makes the API request
+      const user = await login(values); // Assuming login is an async function returning the response
+      // Stop submitting (the form is no longer in submission state)
+      setSubmitting(false);
 
-    
-    // Destructure the response
-    const { data } = user;
-    
-    // Check if the status is true (successful login)
-    if (data?.status === true) {
-      // Show success message
-      toast.success(data.message);
+      // Destructure the response
+      const { data } = user;
 
-      // Store the access and refresh tokens in localStorage
-      localStorage.setItem("accessToken", data?.data.accessToken); // Store the access token
-      localStorage.setItem("refreshToken", data?.data.refreshToken); // Store the refresh token
- // Redirect to the home page or dashboard
- navigate("/");
-    
-      // Now, use the `useUserDetailsQuery` hook to fetch user details.
-      // This hook will return data once the request is completed
-      const { data: userDetailsData } = await useUserDetailsQuery(); // RTK Query hook
-      console.log(userDetailsData)
+      // Check if the status is true (successful login)
+      if (data?.status === true) {
+        // Show success message
+        toast.success(data.message);
 
-      // Dispatch the user details to Redux
-      dispatch(setUserDetails(userDetailsData));
+        // Store the access and refresh tokens in localStorage
+        localStorage.setItem("accessToken", data?.data.accessToken); // Store the access token
+        localStorage.setItem("refreshToken", data?.data.refreshToken); // Store the refresh token
 
-     
-    } else {
-      // If login is unsuccessful, show the message from the server
-      toast.error(data.message); // Display error message (from server)
+        navigate("/");
+       
+
+      } else {
+        // If login is unsuccessful, show the message from the server
+        toast.error(data.message); // Display error message (from server)
+      }
+    } catch (error) {
+      setSubmitting(false);
+      if (error.user) {
+        // Server responded with a status other than 200 range
+        setErrors({ api: error.message });
+      } else {
+        // Network error or other issues
+        setErrors({ api: "An error occurred. Please try again." });
+      }
     }
-  } catch (error) {
-    setSubmitting(false);
-            if (error.user) {
-              // Server responded with a status other than 200 range
-              setErrors({ api: error.message });
-            } else {
-              // Network error or other issues
-              setErrors({ api: "An error occurred. Please try again." });
-            }
-  }
-};
+  };
 
   // Validation schema with Yup
   const validationSchema = Yup.object().shape({
@@ -82,15 +73,13 @@ const handleSubmit = async (values,{setSubmitting,setErrors}) => {
       onSubmit={handleSubmit}
       validationSchema={validationSchema}
     >
-      {
-        (formikProps) => {
-            return(
-                <Form>
-                    <Login formikProps={formikProps}/>
-                </Form>
-            )
-        }
-      }
+      {(formikProps) => {
+        return (
+          <Form>
+            <Login formikProps={formikProps} />
+          </Form>
+        );
+      }}
     </Formik>
   );
 };

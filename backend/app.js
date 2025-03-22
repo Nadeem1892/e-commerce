@@ -20,7 +20,10 @@ app.use(bodyParser.json());
 // };
 
 // app.use(cors(corsOptions))
-app.use(cors())
+app.use(cors({
+    origin: "http://localhost:5173",  // Your frontend URL
+    credentials: true,  // Allow cookies/credentials to be sent
+  }));
 
 app.use("/", routes)
 

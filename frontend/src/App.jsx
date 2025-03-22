@@ -1,35 +1,31 @@
-import Header from './components/Header/Header';
+import Header from "./components/Header/Header"
+import Footer from "./components/Footer/Footer"
 import { Outlet } from 'react-router-dom';
-import Footer from './components/Footer/Footer';
-import { useUserDetailsQuery } from './services/api/user/userServices';
+import { useUserDetailsQuery } from "./services/api/user/userServices";
+import { useEffect } from "react";
 
 function App() {
-  // Fetch user details using the useUserDetailsQuery hook
-  const { data, error, isLoading } = useUserDetailsQuery(undefined, {
-    refetchOnMountOrArgChange: true,
-    skip: false, // Make sure to fetch the data
-  });
 
-  // Log the data for debugging purposes
-  console.log("Fetched data:", data);
-  console.log("Error:", error);
+   // Destructure the query result from RTK Query hook
+   const { data:userData, isError } = useUserDetailsQuery();
 
-  // Handle loading state
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
-  // Handle error state
-  if (error) {
-    console.error("Error fetching user details:", error);
-    // Display a user-friendly error message
-    return <div>Error: {error.message || "Something went wrong!"}</div>;
-  }
-
+   useEffect(() => {
+     // You can add logic here to handle the fetched data
+     if (userData) {
+       console.log("User data fetched successfully:", userData);
+     }
+     if (isError) {
+       console.log("Error occurred:", isError);
+     }
+ 
+   }, [userData, isError]); // This will trigger the effect when any of these values change
+ 
+  
   return (
     <>
       <Header />
       <main className="min-h-[78vh]">
+      
         <Outlet />
       </main>
       <Footer />

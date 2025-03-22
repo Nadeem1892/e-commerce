@@ -5,14 +5,15 @@ import { FaRegUserCircle } from "react-icons/fa";
 import { IoMdCart } from "react-icons/io";
 import { FaUser } from "react-icons/fa";
 import useMobile from "../../hooks/useMobile";
-import { useSelector } from "react-redux";
+
 
 const Header = () => {
   const [isMobile] = useMobile();
   const location = useLocation();
   const isSearchPage = location.pathname === "/search";
   const navigate = useNavigate();
-  const user = useSelector((state)=> state?.user)
+  
+  
 
   // console.log(user,"user me")
 

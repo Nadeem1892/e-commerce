@@ -7,9 +7,9 @@ export const userApi = createApi({
     baseUrl: "http://localhost:4000/user/",
     prepareHeaders: (headers) => {
       const token = localStorage.getItem("accessToken");
-      
+      console.log(token);
       if (token) {
-        headers.set("x-access-token", token);
+        headers.set("Authorization", `Bearer ${token}`);
       }
       return headers;
     },
@@ -71,14 +71,7 @@ export const userApi = createApi({
         };
       },
     }),
-    // Optional refresh token endpoint
-    refreshToken: builder.mutation({
-      query: () => ({
-        url: "refresh-token",
-        method: "POST",
-        body: { refreshToken: localStorage.getItem('refreshToken') }, 
-      }),
-    }),
+   
   }),
 });
 
