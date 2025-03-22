@@ -4,10 +4,9 @@ import {jwtDecode} from "jwt-decode";
 export const userApi = createApi({
   reducerPath: "userApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://localhost:4000/user/",
+    baseUrl: "http://192.168.1.21:4000/user/",
     prepareHeaders: (headers) => {
       const token = localStorage.getItem("accessToken");
-      console.log(token);
       if (token) {
         headers.set("Authorization", `Bearer ${token}`);
       }
@@ -23,6 +22,7 @@ export const userApi = createApi({
         method: "POST",
         body: { email, password },
       }),
+      
     }),
 
     // Register End Point
@@ -69,9 +69,20 @@ export const userApi = createApi({
           method: "GET",
 
         };
+        
       },
     }),
-   
+   // User logout Endpoint
+   logout: builder.query({
+    query: () => {
+      return {
+        url: "logout",
+        method: "GET",
+
+      };
+    },
+    invalidatesTags: ["user"],
+  }),
   }),
 });
 
@@ -82,4 +93,5 @@ export const {
   useVerifyForgotPasswordOtpMutation,
   useResetPasswordMutation,
   useUserDetailsQuery,
+  useLogoutQuery,
 } = userApi;

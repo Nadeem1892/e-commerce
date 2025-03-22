@@ -4,14 +4,16 @@ import * as Yup from "yup";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { useLoginMutation } from "../../services/api/user/userServices";
-
+import { useLoginMutation, useUserDetailsQuery } from "../../services/api/user/userServices";
+import { setUserDetails } from "../../services/slices/userSlice";
 
 
 
 const LoginWrapper = () => {
   const navigate = useNavigate();
+   const dispatch = useDispatch()
   const [login] = useLoginMutation();
+  const { data: userData } = useUserDetailsQuery();
 
   // initial value
   const initialValues = {
@@ -39,6 +41,9 @@ const LoginWrapper = () => {
         localStorage.setItem("accessToken", data?.data.accessToken); // Store the access token
         localStorage.setItem("refreshToken", data?.data.refreshToken); // Store the refresh token
 
+        if (userData) {
+          dispatch(setUserDetails(userData?.data))
+        }
         navigate("/");
        
 

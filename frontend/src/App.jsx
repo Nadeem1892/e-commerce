@@ -3,22 +3,21 @@ import Footer from "./components/Footer/Footer"
 import { Outlet } from 'react-router-dom';
 import { useUserDetailsQuery } from "./services/api/user/userServices";
 import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { setUserDetails } from "./services/slices/userSlice";
 
 function App() {
 
-   // Destructure the query result from RTK Query hook
-   const { data:userData, isError } = useUserDetailsQuery();
+  const dispatch = useDispatch()
+  const { data: userData, isError } = useUserDetailsQuery();
 
-   useEffect(() => {
-     // You can add logic here to handle the fetched data
-     if (userData) {
-       console.log("User data fetched successfully:", userData);
-     }
-     if (isError) {
-       console.log("Error occurred:", isError);
-     }
- 
-   }, [userData, isError]); // This will trigger the effect when any of these values change
+  useEffect(() => {
+    if (userData?.data && !isError) {
+      dispatch(setUserDetails(userData.data));
+    } else if (isError) {
+      console.error('Error fetching user details');
+    }
+  }, [userData, isError, dispatch]);
  
   
   return (
