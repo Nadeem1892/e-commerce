@@ -49,7 +49,7 @@ const UserMenu = ({ close }) => {
         <Link
           onClick={handleClose}
           to={"/dashboard/profile"}
-          className="hover:text-primary-200"
+          className="hover:text-[#ffbf00]"
         >
           <HiOutlineExternalLink size={15} />
         </Link>
@@ -62,7 +62,7 @@ const UserMenu = ({ close }) => {
           
         <Link
           onClick={handleClose}
-          to={"/dashboard/myorders"}
+          to={"/dashboard/my-orders"}
           className="px-2 hover:bg-orange-200 py-1"
         >
           My Orders

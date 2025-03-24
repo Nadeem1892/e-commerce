@@ -69,7 +69,6 @@ export const userApi = createApi({
           method: "GET",
 
         };
-        
       },
     }),
    // User logout Endpoint
@@ -83,6 +82,27 @@ export const userApi = createApi({
     },
     invalidatesTags: ["user"],
   }),
+
+     // User Update Endpoint
+     updateUser: builder.mutation({
+      query: (body) => {
+        return {
+          url: "update-user",
+          method: "POST",
+          body: body
+        };
+      },
+    }),
+        // Upload Avatar Endpoint
+        uploadAvatar: builder.mutation({
+          query: (body) => {
+            return {
+              url: "upload-avatar",
+              method: "PUT",
+              body: body
+            };
+          },
+        }),
   }),
 });
 
@@ -94,4 +114,6 @@ export const {
   useResetPasswordMutation,
   useUserDetailsQuery,
   useLogoutQuery,
+  useUpdateUserMutation,
+  useUploadAvatarMutation
 } = userApi;
