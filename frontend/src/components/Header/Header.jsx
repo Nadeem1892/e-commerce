@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import logo from "../../assets/logo.png";
+import logo from "../../assets/MAQ_Cakes.png";
 import Search from "../Search/Search";
 import { FaRegUserCircle } from "react-icons/fa";
 import { GoTriangleDown, GoTriangleUp } from "react-icons/go";
@@ -41,25 +41,21 @@ const Header = () => {
   return (
     <header className="bg-white h-24 lg:h-20 lg:shadow-md sticky top-0 flex flex-col justify-center gap-1">
       {!(isSearchPage && isMobile) && (
-        <div className="container mx-auto flex items-center lg:px-10 px-3 justify-between">
+        <div className="flex items-center p-4 justify-between">
           {/* Logo */}
-          <div className="h-full">
-            <Link to={"/"} className="h-full flex justify-center items-center">
+          <div className="hidden bg-green-300 h-20  lg:block">
+            <Link to={"/"} className="">
               <img
                 src={logo}
-                width={170}
-                height={60}
                 alt="logo"
-                className="hidden lg:block"
-              />
-              <img
-                src={logo}
-                width={120}
-                height={60}
-                alt="logo"
-                className="lg:hidden"
+                className=" h-full w-full"
               />
             </Link>
+          </div>
+
+          {/* Location */}
+          <div className="">
+           Location
           </div>
 
           {/* Search bar */}

@@ -21,7 +21,8 @@ const Search = () => {
   };
 
   return (
-    <div className="w-full min-w-[300px] lg:min-w-[420px] h-10 lg:h-12 rounded-md border p-1 overflow-hidden flex items-center text-neutral-500 bg-slate-50 group focus-within:border-[#ffbf00] transition-all duration-300">
+    <div className="w-full min-w-[300px] lg:min-w-[520px] h-10 lg:h-12 rounded-md border border-gray-200 p-1 overflow-hidden flex items-center text-neutral-500 bg-slate-50 group focus-within:border-[#ffbf00] transition-all duration-300">
+   
     <div >
     
 
@@ -40,10 +41,10 @@ const Search = () => {
    
     </div>
 
-      <div className="w-full h-full flex items-center">
+      <div className="w-full h-full flex items-center ">
         {!isSearchPage ? (
           // not in search page
-          <div onClick={redirectToSearchPage}>
+          <div onClick={redirectToSearchPage} className="w-full">
             <TypeAnimation
               sequence={[
                 // Same substring at the start will only be typed out once, initially
