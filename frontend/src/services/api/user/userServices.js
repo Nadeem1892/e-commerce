@@ -4,7 +4,7 @@ import {jwtDecode} from "jwt-decode";
 export const userApi = createApi({
   reducerPath: "userApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://192.168.1.21:4000/user/",
+    baseUrl: "http://192.168.1.9:4000/user/",
     prepareHeaders: (headers) => {
       const token = localStorage.getItem("accessToken");
       if (token) {
